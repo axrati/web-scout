@@ -47,7 +47,7 @@ export class SearchSession {
   }
 
   public async init({ headless = true, ocr = false }: SessionStartProps) {
-    this.browser = await puppeteer.launch({ headless });
+    this.browser = await puppeteer.launch({ headless, args: ["--no-sandbox"] });
     this.active = true;
   }
 

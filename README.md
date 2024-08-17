@@ -57,3 +57,13 @@ import { SearchSession } from "./functionality/session";
   await scout.save(); // Path of your choice
 })();
 ```
+
+<br></br>
+
+# Docker
+
+Edit the Dockerfile however you want.
+
+`docker build . -t web-scout`
+<br></br>
+`docker run -dit --name web-scout web-scout`
