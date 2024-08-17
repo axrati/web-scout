@@ -17,7 +17,8 @@ export async function crawlUrls(
   maxDepth: number,
   visitedUrls: Set<string> = new Set(),
   ocr: boolean = false,
-  retryCount: number = 3
+  retryCount: number = 3,
+  ignoreResults: string[] = []
 ): Promise<CrawlResult[]> {
   if (depth > maxDepth || visitedUrls.has(currentUrl)) {
     return [];
@@ -64,7 +65,10 @@ export async function crawlUrls(
 
     // Recursively visit each URL using the same page
     for (const url of urls) {
-      if (!Array.from(visitedUrls).includes(url)) {
+      if (
+        !Array.from(visitedUrls).includes(url) && // Dont visit pages you've already seen
+        !ignoreResults.some((substring) => url.includes(substring)) // Dont visit pages that meet the ignoreResults pattern match
+      ) {
         const nestedResults = await crawlUrls(
           page,
           url,

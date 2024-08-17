@@ -11,6 +11,8 @@ import { googleSearch } from "./search";
 import { CrawlResult } from "../types";
 import { crawlUrls } from "./scrape";
 import { CrawlingSession } from "../types";
+import fs from "fs";
+import path from "path";
 
 interface SessionStartProps {
   headless: boolean;
@@ -35,10 +37,12 @@ export class SearchSession {
   public browser: Browser | null;
   private ocr: boolean;
   private active: boolean;
+  public results: CrawlingSession[];
   constructor() {
     this.browser = null;
     this.ocr = false;
     this.active = false;
+    this.results = [];
   }
 
   public async init({ headless = true, ocr = false }: SessionStartProps) {
@@ -62,6 +66,7 @@ export class SearchSession {
       for (const url of results.urls) {
         try {
           const drillThru = await crawlUrls(page, url, 0, recursion);
+          this.results.push({ mainUrl: url, results: drillThru });
           finalResults.push({ mainUrl: url, results: drillThru });
         } catch (error) {
           console.error(`Error processing URL: ${url}: ${error}`);
@@ -75,5 +80,38 @@ export class SearchSession {
 
   public async close() {
     this.browser?.close;
+  }
+
+  public async save(filePath: string = "results.json"): Promise<void> {
+    try {
+      const fullPath = path.resolve(filePath);
+      const data = JSON.stringify(this.results, null, 2); // Convert results to JSON format
+      await fs.promises.writeFile(fullPath, data, "utf-8");
+      console.log(`Results saved to ${fullPath}`);
+    } catch (error) {
+      console.error(`Failed to save results: ${error}`);
+    }
+  }
+
+  public async files(callback: (fileData: Buffer) => void): Promise<void> {
+    const imgsDir = path.join(__dirname, "imgs");
+
+    // Ensure the directory exists
+    if (!fs.existsSync(imgsDir)) {
+      throw new Error("The ./imgs directory does not exist.");
+    }
+    // Read all png files in the imgs directory
+    const files = fs
+      .readdirSync("imgs")
+      .filter((file) => file.endsWith(".png"));
+
+    // Filter only .png files and process each one
+    await Promise.all(
+      files.map(async (file) => {
+        const filePath = path.join("imgs", file);
+        const fileData = fs.readFileSync(filePath);
+        await callback(fileData);
+      })
+    );
   }
 }

@@ -10,5 +10,5 @@ import { SearchSession } from "./functionality/session";
     recursion: 0,
   });
 
-  console.log(searchResults);
+  await sxt.save();
 })();
