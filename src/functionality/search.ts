@@ -13,27 +13,32 @@ interface GoogleSearchParams {
   page: Page;
   searchTerm: string;
   ignoreResults: string[];
+  numPages: number;
 }
 
 export async function googleSearch({
   page,
   searchTerm,
   ignoreResults,
+  numPages,
 }: GoogleSearchParams): Promise<GoogleSearchResults> {
   // await
-  await page.goto(`https://www.google.com/search?q=${searchTerm}`);
-  const bodyText = await page.evaluate(() => {
-    return document.body.innerText;
-  });
-  const availableUrls = await page.evaluate(() => {
-    const aTags = Array.from(document.querySelectorAll("a")).map(
-      (anchor) => anchor.href
+  let finalUrls: string[] = [];
+  for (let scanThru = 1; scanThru < numPages + 1; scanThru++) {
+    const startingIdx = scanThru * 10;
+    await page.goto(
+      `https://www.google.com/search?q=${searchTerm}&start=${startingIdx}`
     );
-    return aTags;
-  });
-  const filteredUrls = filterResults(availableUrls, ignoreResults);
-
-  return { urls: filteredUrls, fullText: bodyText };
+    const availableUrls = await page.evaluate(() => {
+      const aTags = Array.from(document.querySelectorAll("a")).map(
+        (anchor) => anchor.href
+      );
+      return aTags;
+    });
+    const filteredUrls = filterResults(availableUrls, ignoreResults);
+    finalUrls = Array.from(new Set([...filteredUrls, ...finalUrls]));
+  }
+  return { urls: finalUrls };
 }
 
 export function filterResults(results: string[], ignoreResults: string[]) {

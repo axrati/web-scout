@@ -11,12 +11,17 @@ import { CrawlingSession } from "./types";
     page,
     searchTerm: "jackals",
     ignoreResults: ["google.com", "youtube.com", "wikipedia"],
+    numPages: 1,
   });
   // Scrape your recursion
   const finalResults: CrawlingSession[] = [];
   for (const url of results.urls) {
     try {
-      const drillThru = await crawlUrls(page, url, 0, 0);
+      const drillThru = await crawlUrls(page, url, 0, 0, [
+        "google.com",
+        "youtube.com",
+        "wikipedia",
+      ]);
       finalResults.push({ mainUrl: url, results: drillThru });
     } catch (error) {
       console.error(`Error processing URL: ${url}: ${error}`);

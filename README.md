@@ -4,13 +4,14 @@
 import { SearchSession } from "./functionality/session";
 
 (async () => {
-  const sxt = new SearchSession();
-  sxt.init({ headless: true, ocr: false });
+  const scout = new SearchSession();
+  scout.init({ headless: true, ocr: false });
 
-  const searchResults = await sxt.search({
+  const searchResults = await scout.search({
     searchTerm: "What is the cost of healthcare in CT?",
     ignoreResults: ["google.com", "youtube.com", "wikipedia.com"],
     recursion: 0,
+    numPages: 1,
   });
 
   console.log(searchResults); // [...{mainUrl,results:[...{url,text}]}]
@@ -38,20 +39,21 @@ Enable ocr and read through the saved files
 import { SearchSession } from "./functionality/session";
 
 (async () => {
-  const sxt = new SearchSession();
-  sxt.init({ headless: true, ocr: true });
+  const scout = new SearchSession();
+  scout.init({ headless: true, ocr: true });
 
-  const searchResults = await sxt.search({
+  const searchResults = await scout.search({
     searchTerm: "What is the cost of healthcare in CT?",
     ignoreResults: ["google.com", "youtube.com", "wikipedia.com"],
     recursion: 0,
+    numPages: 3,
   });
 
-  await sxt.files((fileData) => {
+  await scout.files((fileData) => {
     // Do-something
     console.log("File data:", fileData);
   });
 
-  await sxt.save(); // Path of your choice
+  await scout.save(); // Path of your choice
 })();
 ```

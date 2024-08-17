@@ -1,14 +1,25 @@
 import { SearchSession } from "./functionality/session";
 
 (async () => {
-  const sxt = new SearchSession();
-  sxt.init({ headless: true, ocr: false });
+  const scout = new SearchSession();
+  await scout.init({ headless: true, ocr: false });
 
-  const searchResults = await sxt.search({
-    searchTerm: "What is the cost of healthcare in CT?",
-    ignoreResults: ["google.com", "youtube.com", "wikipedia.com"],
-    recursion: 0,
+  const searchResults = await scout.search({
+    searchTerm: "CT Decorations",
+    ignoreResults: [
+      "google",
+      "youtube",
+      "wikipedia",
+      "github",
+      "facebook",
+      "party",
+    ],
+    recursion: 1,
+    numPages: 1,
   });
 
-  await sxt.save();
+  await scout.save();
+  await scout.close();
+  console.log(scout.results);
+  process.exit(0);
 })();

@@ -31,6 +31,7 @@ interface searchProps {
   searchTerm: string;
   ignoreResults: string[];
   recursion: number;
+  numPages: number;
 }
 
 export class SearchSession {
@@ -54,20 +55,34 @@ export class SearchSession {
     searchTerm,
     ignoreResults,
     recursion = 0,
+    numPages = 1,
   }: searchProps): Promise<CrawlingSession[]> {
     if (!this.active) {
       throw Error("Activate your session with .init() first.");
     }
     const page = await this.browser?.newPage();
     if (page) {
-      const results = await googleSearch({ page, searchTerm, ignoreResults });
+      const results = await googleSearch({
+        page,
+        searchTerm,
+        ignoreResults,
+        numPages,
+      });
       // Scrape your recursion
       const finalResults: CrawlingSession[] = [];
       for (const url of results.urls) {
         try {
-          const drillThru = await crawlUrls(page, url, 0, recursion);
-          this.results.push({ mainUrl: url, results: drillThru });
-          finalResults.push({ mainUrl: url, results: drillThru });
+          if (!ignoreResults.some((substring) => url.includes(substring))) {
+            const drillThru = await crawlUrls(
+              page,
+              url,
+              0,
+              recursion,
+              ignoreResults
+            );
+            this.results.push({ mainUrl: url, results: drillThru });
+            finalResults.push({ mainUrl: url, results: drillThru });
+          }
         } catch (error) {
           console.error(`Error processing URL: ${url}: ${error}`);
         }

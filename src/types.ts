@@ -1,6 +1,5 @@
 export interface GoogleSearchResults {
   urls: string[];
-  fullText: string;
 }
 
 export interface CrawlResult {

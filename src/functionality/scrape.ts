@@ -15,12 +15,16 @@ export async function crawlUrls(
   currentUrl: string,
   depth: number,
   maxDepth: number,
+  ignoreResults: string[],
   visitedUrls: Set<string> = new Set(),
   ocr: boolean = false,
-  retryCount: number = 3,
-  ignoreResults: string[] = []
+  retryCount: number = 3
 ): Promise<CrawlResult[]> {
-  if (depth > maxDepth || visitedUrls.has(currentUrl)) {
+  if (
+    depth > maxDepth ||
+    visitedUrls.has(currentUrl) ||
+    ignoreResults.some((substring) => currentUrl.includes(substring))
+  ) {
     return [];
   }
 
@@ -32,13 +36,13 @@ export async function crawlUrls(
     for (let attempt = 0; attempt < retryCount; attempt++) {
       try {
         // Introduce a delay before attempting navigation to avoid race conditions
-        await delay(1000);
+        // await delay(1000);
         await page.goto(currentUrl, {
           waitUntil: "networkidle2",
           timeout: 60000,
         });
         // Introduce a delay for SPA's
-        await delay(2000);
+        await delay(1000);
         if (ocr) {
           await page.screenshot({ path: `imgs/${url}.png`, fullPage: true });
         }
@@ -74,6 +78,7 @@ export async function crawlUrls(
           url,
           depth + 1,
           maxDepth,
+          ignoreResults,
           visitedUrls
         );
         results.push(...nestedResults);
